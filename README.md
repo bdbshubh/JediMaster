@@ -2,12 +2,14 @@ JEDIMASTER
 
 As a backend developer, I wrote this assignment in NodeJS environment.
 I have craeted few REST API's which uses SWAPI API's internally. Below are the detail description of the assignment.
-1. Created three REST APIs:
+1. Created four REST APIs:
     a.  Endpoint: '/'
         Method: GET
     b.  Endpoint: '/home'
         Method: POST
-    c.  Endpoint: '/searchPlanet'
+    c.  Endpoint: '/welcome'
+        Method: POST
+    d.  Endpoint: '/searchPlanet'
         Method: POST
 
     At first, when your server is up and running, hit 'localhost:7000/', it will redirect you to the login dashboard. Once you enter your credentials it will authenticate and redirect you to the home page in success senerio.

@@ -2,14 +2,13 @@ const express = require('express');
 const app = express();
 const swapi = require('swapi-node');
 const bodyParser = require('body-parser');
-const cors = require('cors');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
  
 // parse application/json
 app.use(bodyParser.json())
-//app.use(cors);
+
 
 app.get('/', (req, res) => {
     res.writeHead(200, {'content-type': 'text/html'});
@@ -48,17 +47,18 @@ app.post('/home', (req,res) => {
                 const loginStatus = checkLogin(req.body.user_name, req.body.birthYear);
                 if(loginStatus) {
                     res.writeHead(200, {'content-type': 'text/html'});
-                    res.end("<form method='post' action='/searchPlanet'>" +
-                    "Enter Planet Name : <input type='text' name='planet_name' value=''/><br/><br/>" +
-                    "<input type='submit' value='Search'/><br/><br/>" +
-                    "</form><br/><br/> " + "<div> Hello Bro </div>");
-                    /*res.end("<script src='https://code.jquery.com/jquery-1.12.4.min.js'></script><form>" +
-                    "Enter Planet Name : <input type='text' name='planet_name' value=''/><br/><br/>" +
-                    "<input type='button' onclick= 'showPlanetData()' value='Search'/><br/><br/>" +
-                    "</form>" + "<div id= 'planetResult'>  </div> <script> function showPlanetData() { $.ajax({url: 'localhost:7000/searchPlanet',type: 'get',success: function(data){console.log(data); for(var i = 0; i < data.length; i++) {var div = document.getElementById('planetResult'); div.innerHTML = data[i].name;} },error: function (xhr, ajaxOptions, thrownError) {var errorMsg = 'Ajax request failed: ' + xhr.responseText;$('#planetResult').html(errorMsg);}});};</script>");*/
+                    res.end("<form method='post' action='/welcome'>" +
+                    "Press go inside to welcome in starwars : <input type='submit' value='Go inside'/><br/><br/>");
                 }
                 else {
-                    res.send("Invalid Credentials");
+                    res.writeHead(200, {'content-type': 'text/html'});
+                    res.end(
+                        "Invalid Credential. Please try again<br/><br/><form method='post' action='/home'>" +
+                        "User Name : <input type='text' name='user_name' value=''/><br/><br/>" +
+                        "Password :<input type='password' name='birthYear' value=''/><br/><br/>" +
+                        "<input type='submit' value='Login'/><br/><br/>" +
+                        "</form>"
+                    );
                 }
                 
             })
@@ -76,15 +76,27 @@ app.post('/home', (req,res) => {
         const loginStatus = checkLogin(req.body.user_name, req.body.birthYear);
         if(loginStatus) {
             res.writeHead(200, {'content-type': 'text/html'});
-            res.end("<form method='post' action='/searchPlanet'>" +
-                    "Enter Planet Name : <input type='text' name='planet_name' value=''/><br/><br/>" +
-                    "<input type='submit' value='Search'/><br/><br/>" +
-                    "</form><br/><br/> " + "<div> Hello Bro </div>");
+            res.end("<form method='post' action='/welcome'>" +
+                    "Press go inside to welcome in starwars : <input type='submit' value='Go inside'/><br/><br/>");
         }
         else {
-            res.send("Invalid Credentials");
+            res.writeHead(200, {'content-type': 'text/html'});
+                    res.end(
+                        "Invalid Credential. Please try again<br/><br/><form method='post' action='/home'>" +
+                        "User Name : <input type='text' name='user_name' value=''/><br/><br/>" +
+                        "Password :<input type='password' name='birthYear' value=''/><br/><br/>" +
+                        "<input type='submit' value='Login'/><br/><br/>" +
+                        "</form>"
+                    );
         }
     }
+})
+
+app.post('/welcome', (req,res)=> {
+    res.writeHead(200, {'content-type': 'text/html'});
+    res.end("<form method='post' action='/searchPlanet'>" +
+            "Enter Planet Name : <input type='text' name='planet_name' value=''/><br/><br/>" +
+            "<input type='submit' value='Search'/><br/><br/>");
 })
 
 app.post('/searchPlanet', (req, res) => {
@@ -106,10 +118,39 @@ app.post('/searchPlanet', (req, res) => {
                 global.planetResultsData = planetResult;
                 console.log("Planet initial Data Sync");
                 const searchedPlanets = searchingPlanet(req.body.planet_name);
-                // res.writeHead(200, {'content-type': 'text/html'});
-                // res.end("<form method='post' action='/home'>" +
-                //     "Click here to search again<input type='submit' value='here'/><br/><br/>" + searchedPlanets);
-                res.send(searchedPlanets);
+                
+                if(searchedPlanets instanceof Array){
+                    searchedPlanets.sort((a,b)=>{
+                        return b.population - a.population;
+                     } );
+                     res.writeHead(200, {'content-type': 'text/html'});
+                 var innnerDiv = ``;
+                for(var property in searchedPlanets ) {
+                    if(property == 0) {
+                        innnerDiv += `<div> <b>Plantes Number : ${Number(property) + 1} Has Highest Population</b></div><br/><br/>`;
+                    }
+                    else {
+                        innnerDiv += `<div> <b>Plantes Number : ${Number(property) + 1}</b></div><br/><br/>`;
+                    }
+                    for(var innerProp in searchedPlanets[property]) {
+                        if(property == 0) {
+                            
+                            innnerDiv += `<div> <b>${innerProp}: ${searchedPlanets[property][innerProp]} </b></div> <br/> <br/>`
+                        }
+                        else {
+                            innnerDiv += `<div> ${innerProp}: ${searchedPlanets[property][innerProp]}</div> <br/> <br/>`
+                        }
+                    }
+                }
+                res.end("<form method='post' action='/welcome'>" +
+                    "Click here to search again<input type='submit' value='here'/><br/><br/>" +innnerDiv ) ;
+                // res.send(searchedPlanets);
+                }
+                else{
+                    res.writeHead(200, {'content-type': 'text/html'});
+                    res.end("<form method='post' action='/welcome'>" +
+                    "Click here to search again<input type='submit' value='here'/><br/><br/>" +searchedPlanets ) ;
+                }
             })
             .catch((err)=> {
                 res.send(err);
@@ -122,7 +163,38 @@ app.post('/searchPlanet', (req, res) => {
     else {
         console.log('Planet data exist');
         const searchedPlanets = searchingPlanet(req.body.planet_name);
-        res.send(searchedPlanets);
+        if(searchedPlanets instanceof Array){
+            searchedPlanets.sort((a,b)=>{
+                return b.population - a.population;
+             } );
+             res.writeHead(200, {'content-type': 'text/html'});
+         var innnerDiv = ``;
+        for(var property in searchedPlanets ) {
+            if(property == 0) {
+                innnerDiv += `<div> <b>Plantes Number : ${Number(property) + 1} Has Highest Population</b></div><br/><br/>`;
+            }
+            else {
+                innnerDiv += `<div> <b>Plantes Number : ${Number(property) + 1}</b></div><br/><br/>`;
+            }
+            for(var innerProp in searchedPlanets[property]) {
+                if(property == 0) {
+                    
+                    innnerDiv += `<div> <b>${innerProp}: ${searchedPlanets[property][innerProp]} </b></div> <br/> <br/>`
+                }
+                else {
+                    innnerDiv += `<div> ${innerProp}: ${searchedPlanets[property][innerProp]}</div> <br/> <br/>`
+                }
+            }
+        }
+        res.end("<form method='post' action='/welcome'>" +
+            "Click here to search again<input type='submit' value='here'/><br/><br/>" +innnerDiv ) ;
+        // res.send(searchedPlanets);
+        }
+        else{
+            res.writeHead(200, {'content-type': 'text/html'});
+            res.end("<form method='post' action='/welcome'>" +
+                    "Click here to search again<input type='submit' value='here'/><br/><br/>" +searchedPlanets ) ;
+        }
     }
 })
 
